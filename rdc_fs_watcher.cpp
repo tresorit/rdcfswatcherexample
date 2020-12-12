@@ -36,7 +36,7 @@
 #include <type_traits>
 #include <iostream>
 
- // Information about a subscription for the changes of a single directory.
+// Information about a subscription for the changes of a single directory.
 class WatchInfo final
 {
 private:
@@ -202,9 +202,9 @@ void RdcFSWatcher::processEvent(DWORD numberOfBytesTrs, OVERLAPPED* overlapped)
 
 	WatchInfo& watchInfo = watchInfoIt->second;
 
-	// If we're already in PendingClose state, and receive a legitimate notification, then
-	// we don't emit a change notification, however, we delete the WatchInfo, just like when
-	// we receive a "closing" notification.
+	// If we're already in PendingClose state, and receive a legitimate notification,
+	// then we don't emit a change notification -- we delete the WatchInfo, just like
+	// when a "closing" notification is received.
 
 	if (watchInfo.canRun()) {
 		auto notificationResult = watchInfo.processNotifications();
