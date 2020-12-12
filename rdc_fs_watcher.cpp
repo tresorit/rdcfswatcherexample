@@ -92,6 +92,7 @@ public:
 
 RdcFSWatcher::RdcFSWatcher()
 	: stopped(false)
+	, shuttingDown(false)
 {
 	this->iocp.reset(CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, NULL, 1));
 	if (!this->iocp) {
@@ -157,6 +158,7 @@ void RdcFSWatcher::eventLoop()
 
 void RdcFSWatcher::stopEventLoop()
 {
+	this->shuttingDown = true;
 	{
 		std::lock_guard<std::mutex> lock(this->watchInfoMutex);
 		for (auto& watchInfo : this->watchInfos) {
@@ -194,6 +196,10 @@ void RdcFSWatcher::processEvent(DWORD numberOfBytesTrs, OVERLAPPED* overlapped)
 		return;
 	}
 
+	if (this->shuttingDown) {
+		return;
+	}
+
 	WatchInfo& watchInfo = watchInfoIt->second;
 
 	// If we're already in PendingClose state, and receive a legitimate notification, then
@@ -212,14 +218,14 @@ void RdcFSWatcher::processEvent(DWORD numberOfBytesTrs, OVERLAPPED* overlapped)
 			this->watchInfos.erase(watchInfoIt);
 		}
 	}
-	else {
+	else if (!watchInfo.canRun()) {
 		this->watchInfos.erase(watchInfoIt);
 	}
 }
 
 bool RdcFSWatcher::addDirectory(int64_t id, const std::wstring& path)
 {
-	if (this->stopped) {
+	if (this->stopped || this->shuttingDown) {
 		std::cerr << "Watcher thread is not running." << std::endl;
 		return false;
 	}
