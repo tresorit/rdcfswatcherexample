@@ -51,6 +51,9 @@ int wmain(int argc, wchar_t** argv)
 	RdcFSWatcher watch;
 	watch.changeEvent = [](int64_t id, const std::set<std::pair<std::wstring, uint32_t>>& notifications) {
 		for (const auto& notif : notifications) {
+			if ((std::wcout.rdstate() & (std::ios::failbit | std::ios::badbit)) != 0) {
+				std::wcerr << L"Printing failed!" << std::endl;
+			}
 			std::wcout << L"Change on watcher with ID=" << id
 				<< L", relative path: \"" << notif.first.c_str() << L"\""
 				L"event: " << std::to_wstring(notif.second).c_str() << std::endl;
