@@ -33,6 +33,8 @@
 #include <iostream>
 #include <cstdio>
 #include <string>
+#include <io.h>
+#include <fcntl.h>
 
 #include "rdc_fs_watcher.h"
 
@@ -42,6 +44,9 @@ int wmain(int argc, wchar_t** argv)
 		std::wcout << L"Supply paths to listen changes for." << std::endl;
 		return 1;
 	}
+
+	// use _setmode() to make sure that filenames containing Unicode characters are displayed correctly
+	_setmode(_fileno(stdout), _O_WTEXT);
 
 	RdcFSWatcher watch;
 	watch.changeEvent = [](int64_t id, const std::set<std::pair<std::wstring, uint32_t>>& notifications) {
