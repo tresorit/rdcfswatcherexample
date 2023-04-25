@@ -83,6 +83,8 @@ private:
 	HandlePtr iocp;
 	// has the "event loop" stopped?
 	std::atomic<bool> stopped;
+	// are we about the shutdown?
+	std::atomic<bool> shuttingDown;
 	// runs the "event loop", that checks the IOCP
 	std::thread loop;
 
